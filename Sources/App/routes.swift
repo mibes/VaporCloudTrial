@@ -1,24 +1,22 @@
 import Vapor
 
-extension QueryContainer {
-    func getString(param: String) -> String? {
-        do {
-            let result = try self.get(String.self, at: param)
-            return result
-        } catch {
-            return nil
-        }
-    }
-}
-
-
 /// Register your application's routes here.
 public func routes(_ router: Router) throws {
     // Basic "Hello, world!" example
+    
+    let helper = JWTHelper()
+    
     router.get("hello") { req -> String in
-        if let name = req.query.getString(param: "user") {
-            return "Hello, \(name)!"
-        } else {
+        do {
+            let user = try req.query.get(String.self, at: "user")
+            let role = try req.query.get(String.self, at: "role")
+
+            if let jwt = helper.sign(name: user, role: role) {
+                return "Hello, \(user)! Your key is: \(jwt)"
+            } else {
+                return "Hello, \(user)! Thanks for being our: \(role)"
+            }
+        } catch {
             return "Hello, World!"
         }
     }
